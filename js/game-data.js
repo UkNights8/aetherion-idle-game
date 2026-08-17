@@ -361,17 +361,6 @@ const GameData = {
             icon: '💥'
         },
         {
-            id: 'meta_auto_buyer',
-            nameRu: 'Квантовый Авто-Байер',
-            nameEn: 'Quantum Auto-Buyer',
-            descriptionRu: 'Автоматически покупает генераторы с наивысшим КПД каждую секунду.',
-            baseCost: new BigNum(100),
-            costMultiplier: 5.0,
-            maxLevel: 3,
-            effectPerLevel: 1, // unlocks / speeds up auto-purchase
-            icon: '🤖'
-        },
-        {
             id: 'meta_cost_discount',
             nameRu: 'Космический Демпинг',
             nameEn: 'Cosmic Discount',

@@ -380,36 +380,10 @@ class IdleGame {
             this.addCoins(incomeThisFrame);
         }
 
-        // Auto Buyer handling (Prestige Meta rank)
-        const autoBuyerRank = this.state.prestigeUpgrades['meta_auto_buyer'] || 0;
-        if (autoBuyerRank > 0) {
-            this.autoBuyerTimer += dt;
-            const interval = autoBuyerRank === 3 ? 0.25 : (autoBuyerRank === 2 ? 0.5 : 1.0);
-            if (this.autoBuyerTimer >= interval) {
-                this.autoBuyerTimer = 0;
-                this.processAutoBuyers();
-            }
-        }
-
         this.checkAchievements();
         this.updateUIRealtime();
 
         requestAnimationFrame((t) => this.gameLoop(t));
-    }
-
-    processAutoBuyers() {
-        // Buy 1 level of the highest affordable building
-        for (let i = GameData.BUILDINGS.length - 1; i >= 0; i--) {
-            const b = GameData.BUILDINGS[i];
-            const cost = this.formulas.calculateSingleCost(b.baseCost, this.state.buildings[b.id].level, this.getBuildingMultiplier(b.id));
-            if (this.state.coins.gte(cost)) {
-                this.state.coins = this.state.coins.sub(cost);
-                this.state.buildings[b.id].level++;
-                this.recalculateProduction();
-                this.renderBuildings();
-                break;
-            }
-        }
     }
 
     checkAchievements() {
