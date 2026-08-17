@@ -18,6 +18,7 @@ class IdleGame {
         this.activeTab = 'generators';
         this.lastSaveTime = Date.now();
         this.lastFrameTime = performance.now();
+        this.autoBuyTimer = 0;
 
         // Offline modal data
         this.offlinePending = null;
@@ -55,7 +56,8 @@ class IdleGame {
                 bulkMode: '1',         // '1' | '10' | '100' | 'MAX'
                 soundEnabled: true,
                 volume: 0.35,
-                lowFX: false
+                lowFX: false,
+                autoBuy: false
             }
         };
     }
@@ -271,6 +273,74 @@ class IdleGame {
         this.renderBuildings();
     }
 
+    toggleAutoBuy() {
+        this.state.settings.autoBuy = !this.state.settings.autoBuy;
+        this.sound.playUpgrade();
+        this.updateAutoBuyUI();
+        this.visuals.showToast(
+            this.state.settings.autoBuy ? 'Автозакупка включена' : 'Автозакупка выключена',
+            this.state.settings.autoBuy ? 'Генераторы покупаются автоматически' : 'Автоматическая покупка выключена',
+            '⚡'
+        );
+        this.saveGame();
+    }
+
+    updateAutoBuyUI() {
+        const btn = document.getElementById('header-autobuy-toggle');
+        if (!btn) return;
+        const isOn = !!this.state.settings.autoBuy;
+        btn.classList.toggle('active', isOn);
+        btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+        const textEl = btn.querySelector('.autobuy-text');
+        if (textEl) {
+            textEl.textContent = isOn ? 'ВКЛ' : 'ВЫКЛ';
+        }
+    }
+
+    processAutoBuy() {
+        if (!this.state.settings.autoBuy) return;
+        const mode = this.state.settings.bulkMode;
+        let boughtAny = false;
+
+        for (let i = GameData.BUILDINGS.length - 1; i >= 0; i--) {
+            const b = GameData.BUILDINGS[i];
+            const bState = this.state.buildings[b.id];
+            const multiplier = this.getBuildingMultiplier(b.id);
+
+            const bulkCalc = this.formulas.calculateBulkBuy({
+                baseCost: b.baseCost,
+                currentLevel: bState.level,
+                multiplier: multiplier
+            }, this.state.coins, mode);
+
+            if (bulkCalc.levelsToBuy > 0 && this.state.coins.gte(bulkCalc.totalCost)) {
+                this.state.coins = this.state.coins.sub(bulkCalc.totalCost);
+                const oldLevel = bState.level;
+                bState.level += bulkCalc.levelsToBuy;
+                boughtAny = true;
+
+                // Milestone check
+                const oldMilestone = this.formulas.calculateMilestoneMultiplier(oldLevel);
+                const newMilestone = this.formulas.calculateMilestoneMultiplier(bState.level);
+                if (newMilestone > oldMilestone) {
+                    this.sound.playMilestone();
+                    this.visuals.showToast(
+                        'Milestone Reached!',
+                        `${b.nameRu}: уровень ${bState.level} достигнут!`,
+                        b.icon
+                    );
+                }
+                break;
+            }
+        }
+
+        if (boughtAny) {
+            this.recalculateProduction();
+            this.renderBuildings();
+            this.updateUIQuick();
+        }
+    }
+
     buyUpgrade(upgradeId) {
         const upg = GameData.UPGRADES.find(u => u.id === upgradeId);
         if (!upg || this.state.purchasedUpgrades[upgradeId]) return;
@@ -377,6 +447,15 @@ class IdleGame {
         if (this.currentCPS.gt(0)) {
             const incomeThisFrame = this.currentCPS.mul(dt);
             this.addCoins(incomeThisFrame);
+        }
+
+        // Auto-Buy handling
+        if (this.state.settings.autoBuy) {
+            this.autoBuyTimer += dt;
+            if (this.autoBuyTimer >= 0.25) {
+                this.autoBuyTimer = 0;
+                this.processAutoBuy();
+            }
         }
 
         this.checkAchievements();
@@ -643,6 +722,7 @@ class IdleGame {
         this.renderAchievements();
         this.renderStats();
         this.updateSettingsUI();
+        this.updateAutoBuyUI();
     }
 
     renderAll() {
@@ -990,6 +1070,12 @@ class IdleGame {
         document.querySelectorAll('.bulk-btn').forEach(btn => {
             btn.addEventListener('click', () => this.setBulkMode(btn.dataset.mode));
         });
+
+        // Auto-Buy toggle button in header
+        const autoBuyBtn = document.getElementById('header-autobuy-toggle');
+        if (autoBuyBtn) {
+            autoBuyBtn.addEventListener('click', () => this.toggleAutoBuy());
+        }
 
         // Prestige button
         const presBtn = document.getElementById('btn-activate-prestige');
