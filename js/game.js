@@ -286,15 +286,15 @@ class IdleGame {
     }
 
     updateAutoBuyUI() {
-        const btn = document.getElementById('header-autobuy-toggle');
-        if (!btn) return;
         const isOn = !!this.state.settings.autoBuy;
-        btn.classList.toggle('active', isOn);
-        btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
-        const textEl = btn.querySelector('.autobuy-text');
-        if (textEl) {
-            textEl.textContent = isOn ? 'ВКЛ' : 'ВЫКЛ';
-        }
+        document.querySelectorAll('.autobuy-toggle-btn').forEach(btn => {
+            btn.classList.toggle('active', isOn);
+            btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+            const textEl = btn.querySelector('.autobuy-text');
+            if (textEl) {
+                textEl.textContent = isOn ? 'ВКЛ' : 'ВЫКЛ';
+            }
+        });
     }
 
     processAutoBuy() {
@@ -1071,11 +1071,10 @@ class IdleGame {
             btn.addEventListener('click', () => this.setBulkMode(btn.dataset.mode));
         });
 
-        // Auto-Buy toggle button in header
-        const autoBuyBtn = document.getElementById('header-autobuy-toggle');
-        if (autoBuyBtn) {
-            autoBuyBtn.addEventListener('click', () => this.toggleAutoBuy());
-        }
+        // Auto-Buy toggle buttons (header and tab)
+        document.querySelectorAll('.autobuy-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.toggleAutoBuy());
+        });
 
         // Prestige button
         const presBtn = document.getElementById('btn-activate-prestige');

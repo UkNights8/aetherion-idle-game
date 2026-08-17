@@ -55,8 +55,9 @@
 
                 <!-- Auto-Buy Toggle Switch -->
                 <div class="autobuy-group">
-                    <span class="autobuy-label">АВТО:</span>
                     <button class="autobuy-toggle-btn" id="header-autobuy-toggle" title="Включить/выключить автоматическую закупку генераторов">
+                        <span class="autobuy-icon">🤖</span>
+                        <span class="autobuy-title">АВТОЗАКУПКА:</span>
                         <span class="autobuy-dot"></span>
                         <span class="autobuy-text">ВЫКЛ</span>
                     </button>
@@ -116,6 +117,15 @@
                     
                     <!-- TAB 1: GENERATORS -->
                     <div class="game-tab-content active" id="tab-generators">
+                        <div class="tab-toolbar">
+                            <h2 class="tab-heading">Генераторы энергии</h2>
+                            <button class="autobuy-toggle-btn autobuy-tab-btn" id="generators-autobuy-toggle" title="Включить/выключить автоматическую закупку">
+                                <span class="autobuy-icon">🤖</span>
+                                <span class="autobuy-title">АВТОЗАКУПКА:</span>
+                                <span class="autobuy-dot"></span>
+                                <span class="autobuy-text">ВЫКЛ</span>
+                            </button>
+                        </div>
                         <div class="buildings-grid" id="buildings-list">
                             <!-- Populated dynamically via JS -->
                         </div>
