@@ -18,7 +18,6 @@ class IdleGame {
         this.activeTab = 'generators';
         this.lastSaveTime = Date.now();
         this.lastFrameTime = performance.now();
-        this.autoBuyerTimer = 0;
 
         // Offline modal data
         this.offlinePending = null;
@@ -560,6 +559,36 @@ class IdleGame {
             this.state.highestCPS = BigNum.fromJSON(parsed.highestCPS);
             if (parsed.settings) {
                 this.state.settings = Object.assign(this.state.settings, parsed.settings);
+            }
+
+            // Migration: remove obsolete meta_auto_buyer and refund spent prestige shards
+            if (this.state.prestigeUpgrades && typeof this.state.prestigeUpgrades['meta_auto_buyer'] !== 'undefined') {
+                const rank = this.state.prestigeUpgrades['meta_auto_buyer'] || 0;
+                if (rank > 0) {
+                    let refundShards = new BigNum(0);
+                    for (let r = 0; r < rank; r++) {
+                        refundShards = refundShards.add(new BigNum(100).mul(Math.pow(5.0, r)));
+                    }
+                    this.state.prestigeShards = this.state.prestigeShards.add(refundShards);
+                    console.log(`[Save Migration] meta_auto_buyer removed (rank ${rank}). Refunded ${refundShards.toString()} prestige shards.`);
+                }
+                delete this.state.prestigeUpgrades['meta_auto_buyer'];
+                this.saveGame();
+            }
+
+            // Sanitize prestigeUpgrades to only include valid defined keys
+            const validMetaKeys = GameData.PRESTIGE_UPGRADES.map(u => u.id);
+            if (this.state.prestigeUpgrades) {
+                Object.keys(this.state.prestigeUpgrades).forEach(key => {
+                    if (!validMetaKeys.includes(key)) {
+                        delete this.state.prestigeUpgrades[key];
+                    }
+                });
+                validMetaKeys.forEach(k => {
+                    if (typeof this.state.prestigeUpgrades[k] === 'undefined') {
+                        this.state.prestigeUpgrades[k] = 0;
+                    }
+                });
             }
         } catch (e) {
             console.error("Load save failed, resetting to initial:", e);
