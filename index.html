@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetherion: Cosmic Singularity | Idle Progression Core</title>
+    <meta name="description" content="Премиальная инкрементальная Idle-игра с продвинутой математической моделью, механикой престижа, ступенчатыми вехами и оффлайн-прогрессом.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Dynamic Starfield Background Canvas -->
+    <canvas id="starfield-canvas"></canvas>
+
+    <!-- Floating Click Numbers Container -->
+    <div id="floating-container"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Main Game Viewport -->
+    <div class="app-container">
+        
+        <!-- HEADER HUD -->
+        <header class="main-header">
+            <div class="brand-section">
+                <div class="brand-logo">🌌</div>
+                <div>
+                    <h1 class="brand-title">AETHERION</h1>
+                    <span class="brand-badge">SINGULARITY CORE</span>
+                </div>
+            </div>
+
+            <!-- Primary Currency HUD -->
+            <div class="currency-hud">
+                <div class="currency-block">
+                    <span class="currency-icon">⚡</span>
+                    <div class="currency-details">
+                        <div class="currency-amount" id="header-coins">0</div>
+                        <div class="currency-rate">
+                            <span class="rate-label">CPS:</span>+<span id="header-cps">0</span> /с
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Buy & Quick Controls -->
+            <div class="header-actions">
+                <div class="bulk-buy-group">
+                    <span class="bulk-label">ЗАКУПКА:</span>
+                    <button class="bulk-btn active" data-mode="1">1x</button>
+                    <button class="bulk-btn" data-mode="10">10x</button>
+                    <button class="bulk-btn" data-mode="100">100x</button>
+                    <button class="bulk-btn" data-mode="MAX">MAX</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="game-layout">
+            
+            <!-- LEFT COLUMN: QUANTUM REACTOR (CLICKER) -->
+            <section class="reactor-column">
+                <div class="reactor-wrapper" id="quantum-reactor" title="Нажмите для генерации энергии!">
+                    <canvas id="reactor-canvas"></canvas>
+                    <div class="reactor-tap-cue">Квантовый Импульс</div>
+                </div>
+
+                <div class="reactor-stats-card">
+                    <div class="r-stat-row">
+                        <span class="r-stat-label">Мощность клика:</span>
+                        <span class="r-stat-val" id="click-power-val">+1</span>
+                    </div>
+                    <div class="r-stat-row">
+                        <span class="r-stat-label">Режим реактора:</span>
+                        <span class="r-stat-val" style="color: var(--color-emerald);">Стабильный</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: TABS & INTERACTION -->
+            <section class="content-column">
+                
+                <!-- NAVIGATION TABS -->
+                <nav class="tabs-nav" aria-label="Game Navigation">
+                    <button class="nav-tab active" data-tab="generators">
+                        <span>⚡</span> Генераторы
+                    </button>
+                    <button class="nav-tab" data-tab="upgrades">
+                        <span>🔬</span> Технологии
+                    </button>
+                    <button class="nav-tab" data-tab="prestige">
+                        <span>🌌</span> Сингулярность
+                    </button>
+                    <button class="nav-tab" data-tab="achievements">
+                        <span>🏆</span> Достижения
+                    </button>
+                    <button class="nav-tab" data-tab="stats">
+                        <span>📊</span> Статистика
+                    </button>
+                    <button class="nav-tab" data-tab="settings">
+                        <span>⚙️</span> Настройки
+                    </button>
+                </nav>
+
+                <!-- TAB VIEWPORTS -->
+                <div class="tab-viewport">
+                    
+                    <!-- TAB 1: GENERATORS -->
+                    <div class="game-tab-content active" id="tab-generators">
+                        <div class="buildings-grid" id="buildings-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: UPGRADES -->
+                    <div class="game-tab-content" id="tab-upgrades">
+                        <div class="upgrades-grid" id="upgrades-grid">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: PRESTIGE (SINGULARITY) -->
+                    <div class="game-tab-content" id="tab-prestige">
+                        <div class="prestige-container">
+                            
+                            <!-- Hero Reset Card -->
+                            <div class="prestige-hero-card">
+                                <div class="prestige-hero-info">
+                                    <h2 class="prestige-hero-title">Схлопывание Сингулярности</h2>
+                                    <p class="prestige-hero-desc">
+                                        Сбросьте текущие здания и валюту текущего цикла в обмен на Осколки Сингулярности, дающие перманентный глобальный множитель ко всему производству.
+                                    </p>
+                                    <div class="prestige-metrics">
+                                        <div class="metric-item">
+                                            <span class="metric-label">Баланс осколков:</span>
+                                            <span class="metric-val" id="prestige-shards-count">0</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">К получению:</span>
+                                            <span class="metric-val" id="prestige-earnable-count">+0</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">Глобальный бафф:</span>
+                                            <span class="metric-val" id="prestige-global-multiplier">x1.00 (+2.0% за осколок)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn-prestige-action" id="btn-activate-prestige" disabled>
+                                    <span>ВОЙТИ В СИНГУЛЯРНОСТЬ</span>
+                                    <small style="font-size: 11px; opacity: 0.9;">(Soft Reset)</small>
+                                </button>
+                            </div>
+
+                            <!-- Meta Skills Tree -->
+                            <h3 style="font-family: var(--font-heading); font-size: 18px; color: var(--text-primary); margin-top: 8px;">
+                                🔮 Древо Перманентных Мета-Технологий
+                            </h3>
+                            <div class="prestige-tree-grid" id="prestige-tree-grid">
+                                <!-- Populated dynamically via JS -->
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: ACHIEVEMENTS -->
+                    <div class="game-tab-content" id="tab-achievements">
+                        <div class="achievements-header">
+                            <h2 style="font-family: var(--font-heading); font-size: 18px;">Хранилище Достижений</h2>
+                            <span class="brand-badge" id="ach-unlocked-count">0 / 22</span>
+                        </div>
+                        <div class="achievements-grid" id="achievements-grid">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: STATS -->
+                    <div class="game-tab-content" id="tab-stats">
+                        <h2 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 16px;">Аналитика и Метрики Прогресса</h2>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-box-title">Текущий баланс монет</span>
+                                <span class="stat-box-val" id="stat-coins">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Доход в секунду (CPS)</span>
+                                <span class="stat-box-val" id="stat-cps">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Сила клика</span>
+                                <span class="stat-box-val" id="stat-click">1</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Всего кликов по ядру</span>
+                                <span class="stat-box-val" id="stat-clicks-total">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Заработано в текущем раунде (E_total)</span>
+                                <span class="stat-box-val" id="stat-run-earned">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Заработано за всё время</span>
+                                <span class="stat-box-val" id="stat-all-earned">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Рекордный CPS</span>
+                                <span class="stat-box-val" id="stat-highest-cps">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Суммарно зданий</span>
+                                <span class="stat-box-val" id="stat-total-buildings">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Количество Престижей</span>
+                                <span class="stat-box-val" id="stat-prestige-count">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Осколки Сингулярности</span>
+                                <span class="stat-box-val" id="stat-prestige-shards">0</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Время текущего раунда</span>
+                                <span class="stat-box-val" id="stat-run-time">0с</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-title">Общее время игры</span>
+                                <span class="stat-box-val" id="stat-playtime">0с</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 6: SETTINGS & QA SUITE -->
+                    <div class="game-tab-content" id="tab-settings">
+                        <div class="settings-panel">
+                            
+                            <!-- Notation Switcher (Section 6.2) -->
+                            <div class="setting-row">
+                                <div class="setting-label-block">
+                                    <span class="setting-name">Формат отображения чисел</span>
+                                    <span class="setting-desc">Standard (M, B, T...), Scientific (1.5e15) или Engineering (150e12)</span>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="setting-notation">
+                                        <option value="standard">Standard (M, B, T, Qa...)</option>
+                                        <option value="scientific">Scientific (1.54e15)</option>
+                                        <option value="engineering">Engineering (154.20e12)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Audio Settings -->
+                            <div class="setting-row">
+                                <div class="setting-label-block">
+                                    <span class="setting-name">Звуковые sci-fi эффекты</span>
+                                    <span class="setting-desc">Синтезатор Web Audio API</span>
+                                </div>
+                                <div class="setting-control" style="display: flex; align-items: center; gap: 12px;">
+                                    <input type="checkbox" id="setting-sound" checked style="cursor: pointer; width: 18px; height: 18px;">
+                                    <input type="range" id="setting-volume" min="0" max="100" value="35" style="width: 90px;">
+                                </div>
+                            </div>
+
+                            <!-- Performance mode -->
+                            <div class="setting-row">
+                                <div class="setting-label-block">
+                                    <span class="setting-name">Оптимизация частиц</span>
+                                    <span class="setting-desc">Уменьшить количество эффектов для слабых GPU</span>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="checkbox" id="setting-lowfx" style="cursor: pointer; width: 18px; height: 18px;">
+                                </div>
+                            </div>
+
+                            <!-- QA Test Suite Diagnostics (Section 7) -->
+                            <div class="setting-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="setting-label-block">
+                                        <span class="setting-name">QA Диагностика и верификация ТЗ</span>
+                                        <span class="setting-desc">Автотесты Bulk Buy (< 0.0001%), Престижа, Оффлайна и BigNumber</span>
+                                    </div>
+                                    <button class="btn-primary" id="btn-run-qa-tests" onclick="runQADiagnostics()">
+                                        Запустить тесты
+                                    </button>
+                                </div>
+                                <div class="qa-results-box" id="qa-diagnostics-output"></div>
+                            </div>
+
+                            <!-- Save / Export / Reset -->
+                            <div class="setting-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                                <div class="setting-label-block">
+                                    <span class="setting-name">Управление сохранением</span>
+                                    <span class="setting-desc">Экспорт в Base64, импорт или полный сброс</span>
+                                </div>
+                                <textarea class="save-textarea" id="save-string-area" placeholder="Нажмите «Экспорт» для генерации ключа или вставьте сюда ключ для импорта..."></textarea>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn-secondary" id="btn-export-save" style="flex: 1;">📋 Экспорт</button>
+                                    <button class="btn-primary" id="btn-import-save" style="flex: 1;">📥 Импорт</button>
+                                    <button class="btn-danger" id="btn-hard-reset">⚠️ Полный сброс</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- OFFLINE PROGRESS MODAL (Section 5) -->
+    <div class="modal-overlay" id="offline-modal">
+        <div class="modal-card">
+            <div class="modal-icon">⏳</div>
+            <h2 class="modal-title">Добро пожаловать обратно!</h2>
+            <p style="font-size: 13px; color: var(--text-secondary);">
+                Ваш производственный комплекс продолжал работать во время вашего отсутствия.
+            </p>
+
+            <div class="modal-stat-group">
+                <div class="modal-stat-row">
+                    <span style="color: var(--text-muted);">Время оффлайна:</span>
+                    <span class="modal-stat-val" id="offline-time-away">0м</span>
+                </div>
+                <div class="modal-stat-row">
+                    <span style="color: var(--text-muted);">Эффективность генерации:</span>
+                    <span class="modal-stat-val" id="offline-efficiency-val">50%</span>
+                </div>
+                <div class="modal-stat-row" style="border-top: 1px solid var(--border-subtle); padding-top: 6px; margin-top: 4px;">
+                    <span style="color: var(--text-primary); font-weight: 700;">Накоплено монет:</span>
+                    <span class="modal-stat-val" id="offline-coins-earned" style="font-size: 16px; color: var(--color-cyan);">+0</span>
+                </div>
+            </div>
+
+            <div id="offline-cap-notice" style="display: none; font-size: 11px; color: var(--color-amber);">
+                ⚠️ Достигнут лимит оффлайн-накопления. Прокачайте мета-улучшения «Хронос-Экспансия» для увеличения лимита!
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="btn-claim-offline">Забрать доход</button>
+                <button class="btn-primary" id="btn-claim-offline-2x">🔥 Оверчардж x2</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/bignum.js"></script>
+    <script src="js/formulas.js"></script>
+    <script src="js/game-data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/visual-fx.js"></script>
+    <script src="js/test-suite.js"></script>
+    <script src="js/game.js"></script>
+
+    <!-- Inline script for QA test trigger -->
+    <script>
+        function runQADiagnostics() {
+            const out = document.getElementById('qa-diagnostics-output');
+            if (!out) return;
+            out.style.display = 'block';
+            out.innerHTML = '<div style="color: var(--color-cyan);">⏳ Запуск автотестов по критериям ТЗ...</div>';
+
+            setTimeout(() => {
+                const results = GameTestSuite.runAllTests();
+                let html = '<div style="margin-bottom: 8px; font-weight: 700; color: #ffffff;">Результаты QA верификации (Раздел 7 ТЗ):</div>';
+                let totalPassed = 0;
+
+                results.forEach(r => {
+                    if (r.passed) totalPassed++;
+                    const statusBadge = r.passed 
+                        ? '<span style="color: #10b981; font-weight: 700;">[УСПЕХ ✓]</span>' 
+                        : '<span style="color: #ef4444; font-weight: 700;">[ОШИБКА ✗]</span>';
+
+                    html += `
+                        <div style="margin-top: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div>${statusBadge} <strong>${r.name}</strong></div>
+                            <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">${r.details}</div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="margin-top: 10px; font-weight: 700; color: ${totalPassed === results.length ? '#10b981' : '#ef4444'};">
+                        Итог: ${totalPassed}/${results.length} тестов успешно пройдено.
+                    </div>
+                `;
+
+                out.innerHTML = html;
+            }, 100);
+        }
+    </script>
+</body>
+</html>

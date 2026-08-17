@@ -1,0 +1,11 @@
+# Local tools & executables
+tools/
+
+# Local test & deploy scripts
+test_math.ps1
+push_to_github.ps1
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+*.log
