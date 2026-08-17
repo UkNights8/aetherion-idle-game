@@ -79,17 +79,17 @@ class GameTestSuite {
      * Criterion 2: Prestige Math & Soft Reset verification
      */
     static testPrestigeFormula() {
-        // P_earned = floor( 150 * sqrt(E_total / 10^15) ) - spentAndHeld
-        // Test case 1: E_total = 1.0e15 => sqrt(1) = 1 => 150 * 1 = 150
-        const p1 = GameFormulas.calculatePrestigeEarned(new BigNum(1, 15), 0, 150, new BigNum(1, 15));
+        // P_earned = floor( 150 * sqrt(E_total / 10^9) ) - spentAndHeld
+        // Test case 1: E_total = 1.0e9 => sqrt(1) = 1 => 150 * 1 = 150
+        const p1 = GameFormulas.calculatePrestigeEarned(new BigNum(1, 9), 0, 150, new BigNum(1, 9));
         const pass1 = p1.eq(150);
 
-        // Test case 2: E_total = 4.0e15 => sqrt(4) = 2 => 150 * 2 = 300 (spent 150 => net 150)
-        const p2 = GameFormulas.calculatePrestigeEarned(new BigNum(4, 15), 150, 150, new BigNum(1, 15));
+        // Test case 2: E_total = 4.0e9 => sqrt(4) = 2 => 150 * 2 = 300 (spent 150 => net 150)
+        const p2 = GameFormulas.calculatePrestigeEarned(new BigNum(4, 9), 150, 150, new BigNum(1, 9));
         const pass2 = p2.eq(150);
 
-        // Test case 3: E_total = 0.5e15 (below threshold) => 0
-        const p3 = GameFormulas.calculatePrestigeEarned(new BigNum(5, 14), 0, 150, new BigNum(1, 15));
+        // Test case 3: E_total = 0.5e9 (below threshold) => 0
+        const p3 = GameFormulas.calculatePrestigeEarned(new BigNum(5, 8), 0, 150, new BigNum(1, 9));
         const pass3 = p3.eq(0);
 
         // Global multiplier check: Mult = 1 + (P_held * 0.02)
@@ -103,7 +103,7 @@ class GameTestSuite {
             id: 'criterion_2_prestige',
             name: 'Критерий 2: Корректность формулы Престижа и баффа',
             passed: allPassed,
-            details: `Порог 1.0e15: ${p1.toNumber()} осколков. Прогрессия 4.0e15: ${p2.toNumber()} осколков. Множитель 100 осколков: x${multCheck.toNumber()}.`
+            details: `Порог 1.0e9 (1 млрд): ${p1.toNumber()} осколков. Прогрессия 4.0e9: ${p2.toNumber()} осколков. Множитель 100 осколков: x${multCheck.toNumber()}.`
         };
     }
 

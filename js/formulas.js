@@ -9,7 +9,7 @@ const GameFormulas = {
 
     // Prestige defaults (Section 4.1 & 4.2)
     PRESTIGE_SCALE_A: 150.0,
-    PRESTIGE_THRESHOLD_B: new BigNum(1, 15), // 1.0e15
+    PRESTIGE_THRESHOLD_B: new BigNum(1, 9), // 1.0e9 (1 Billion)
     PRESTIGE_BASE_BONUS_PER_UNIT: 0.02, // +2% per held prestige currency
 
     // Offline defaults (Section 5.2)
